@@ -9,13 +9,57 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include "Parameters.h"
+
+
+
 //==============================================================================
-MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDINoteRepeaterAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDINoteRepeaterAudioProcessor& p, DivisionVisualizerCallback divisionVisualizerCallback)
+    : AudioProcessorEditor (&p), audioProcessor (p),
+    divisionVisualizer(divisionVisualizerCallback),
+    noteLengthUnitAttachment(p.apvts, IDs::lengthInSecondsOrBeats, noteLengthUnitCombobox),
+    noteLengthInSecondsAttachment(p.apvts, IDs::noteLengthSeconds, noteLengthInSecondsSlider),
+    noteLengthInBeatsAttachment(p.apvts, IDs::noteLengthBeats, noteLengthInBeatsComboBox),
+    divisionsAttachment(p.apvts, IDs::divisions, divisionsSlider),
+    divisionLengthPercentageAttachment(p.apvts, IDs::divisionsLengthPercentage, divisionLengthPercentageSlider),
+    pitchShiftStepAttachment(p.apvts, IDs::pitchShiftStep, pitchShiftStepSlider),
+    skewAttachment(p.apvts, IDs::skew, skewSlider)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
+    setResizable(true, true);
+    setResizeLimits(400, 300, 1200, 900);
     setSize (400, 300);
+
+    for (auto c : getComponents())
+    {
+        addAndMakeVisible(c);
+    }
+
+    noteLengthUnitCombobox.addItemList(noteLengthUnitChoices, 1);
+    noteLengthInBeatsComboBox.addItemList(NoteLengthChoices, 1);
+
+    noteLengthUnitCombobox.addListener(this);
+}
+
+void MIDINoteRepeaterAudioProcessorEditor::comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) 
+{
+    NoteLengthUnit unit = static_cast<NoteLengthUnit>(comboBoxThatHasChanged->getSelectedItemIndex());
+
+    noteLengthInSecondsSlider.setVisible(unit == NoteLengthUnit::SECONDS);
+    noteLengthInBeatsComboBox.setVisible(unit == NoteLengthUnit::BEATS);
+}
+
+std::vector<juce::Component*> MIDINoteRepeaterAudioProcessorEditor::getComponents()
+{
+    return {
+    &noteLengthUnitCombobox,
+    &noteLengthInSecondsSlider,
+    &noteLengthInBeatsComboBox,
+    &divisionVisualizer,
+    &divisionsSlider,
+    &divisionLengthPercentageSlider,
+    &pitchShiftStepSlider,
+    &skewSlider
+    };
 }
 
 MIDINoteRepeaterAudioProcessorEditor::~MIDINoteRepeaterAudioProcessorEditor()
@@ -35,6 +79,27 @@ void MIDINoteRepeaterAudioProcessorEditor::paint (juce::Graphics& g)
 
 void MIDINoteRepeaterAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    const int noteLengthSectionHeight = 30;
+    const int divisionVisualizerHeight = 50;
+    const int margin = 2;
+
+    juce::Rectangle bounds = getLocalBounds();
+    juce::Rectangle noteLengthSection = bounds.removeFromTop(noteLengthSectionHeight).reduced(margin);
+    juce::Rectangle divisionVisualizerSection = bounds.removeFromTop(divisionVisualizerHeight).reduced(margin);
+    juce::Rectangle divisionSection = bounds.removeFromTop(bounds.getHeight() * 0.5f).reduced(margin);
+    juce::Rectangle fxSection = bounds.reduced(margin);
+
+
+    noteLengthUnitCombobox.setBounds(noteLengthSection.removeFromLeft(getWidth() * 0.4f).reduced(margin));
+    noteLengthInSecondsSlider.setBounds(noteLengthSection.reduced(margin));
+    noteLengthInBeatsComboBox.setBounds(noteLengthSection.reduced(margin));
+
+    divisionVisualizer.setBounds(divisionVisualizerSection);
+
+    divisionsSlider.setBounds(divisionSection.removeFromLeft(getWidth() * 0.5f).reduced(margin));
+    divisionLengthPercentageSlider.setBounds(divisionSection.reduced(margin));
+
+    pitchShiftStepSlider.setBounds(fxSection.removeFromLeft(getWidth() * 0.5f).reduced(margin));
+    skewSlider.setBounds(fxSection.reduced(margin));
+
 }
