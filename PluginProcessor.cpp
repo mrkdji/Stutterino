@@ -8,20 +8,26 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "Parameters.h"
 
 //==============================================================================
 MIDINoteRepeaterAudioProcessor::MIDINoteRepeaterAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       ),
+    : AudioProcessor(BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+        .withInput("Input", juce::AudioChannelSet::stereo(), true)
+#endif
+        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+    ),
     apvts(*this, nullptr, "PARAMETERS", createParametersLayout()),
-    repeater(apvts)
+    repeater(
+        apvts,
+        [this]() -> double {
+            auto bpm = getPlayHead()->getPosition()->getBpm();
+            return bpm ? *bpm : 1.0;
+    })
 #endif
 {
 }
@@ -158,13 +164,14 @@ void MIDINoteRepeaterAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
                 case PlayHeadState::PLAYING:
                 {
                     juce::Logger::writeToLog("State set to Playing");
+                    repeater.onPlayHeadStateChanged();
                     break;
                 }
 
                 case PlayHeadState::PAUSED:
                 {
                     juce::Logger::writeToLog("State set to Paused");
-                    repeater.onPlayHeadPause();
+                    repeater.onPlayHeadStateChanged();
                     panic(midiMessages);
                     break;
                 }
@@ -172,11 +179,7 @@ void MIDINoteRepeaterAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
         }
     }
 
-    switch (playHeadState)
-    {
-        case PlayHeadState::PLAYING:
-                repeater.process(midiMessages);
-    }
+    repeater.process(midiMessages);
 }
 
 //==============================================================================
@@ -214,32 +217,46 @@ juce::AudioProcessorValueTreeState::ParameterLayout MIDINoteRepeaterAudioProcess
     auto params = juce::AudioProcessorValueTreeState::ParameterLayout();
 
     params.add(
+        std::make_unique<juce::AudioParameterChoice>(
+            "lengthInSecondsOrBeats",
+            "Length In Seconds Or Beats",
+            juce::StringArray("Seconds", "Beats"),
+            0
+    ));
+
+    params.add(
+        std::make_unique<juce::AudioParameterFloat>(
+            "noteLengthSeconds",
+            "Note Length",
+            juce::NormalisableRange<float>(0.001f, 2.0f, 0.001f),
+            1.0f
+    ));
+
+    params.add(
+        std::make_unique<juce::AudioParameterChoice>(
+            "noteLengthBeats",
+            "Note Length",
+            NoteLengthChoices,
+            defaultNoteLengthChoice
+    ));
+
+    params.add(
         std::make_unique<juce::AudioParameterInt>(
-            "numOfReps",
-            "Number Of Repetitions",
-            0,
+            "divisions",
+            "Divisions",
+            1,
             50,
             1
     ));
 
     params.add(
         std::make_unique<juce::AudioParameterFloat>(
-            "delayInSeconds",
-            "delay In Seconds",
-            0.001f,
-            0.100f,
-            0.050f
+            "divisionsLengthPercentage",
+            "Divisions Length Percentage",
+            juce::NormalisableRange<float>(0.001f, 1.0f, 0.001f),
+            1.0f
     ));
 
-    params.add(
-        std::make_unique<juce::AudioParameterFloat>(
-            "noteLength",
-            "Note Length",
-            0.001f,
-            0.100f,
-            0.050
-    ));
-    
     params.add(
         std::make_unique<juce::AudioParameterInt>(
             "pitchShiftStep",
@@ -247,14 +264,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout MIDINoteRepeaterAudioProcess
             -12,
             12,
             0
-    ));
+            ));
 
     params.add(
         std::make_unique<juce::AudioParameterFloat>(
-            "skewFactor",
-            "Skew Factor",
-            -10.0f,
-            10.0f,
+            "skew",
+            "Skew",
+            juce::NormalisableRange<float>(-1.0f, 1.0f, 0.01f),
             0.0f
     ));
 

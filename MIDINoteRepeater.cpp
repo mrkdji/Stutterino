@@ -9,6 +9,7 @@
 */
 
 #include "MIDINoteRepeater.h"
+#include "Parameters.h"
 
 void MIDINoteRepeater::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
@@ -22,34 +23,51 @@ void MIDINoteRepeater::prepareToPlay(double sampleRate, int samplesPerBlock)
     eventsQueue.resize(static_cast<size_t>(MAX_DELAY_IN_SECONDS * sampleRate / samplesPerBlock));
 }
 
-void MIDINoteRepeater::getTimeStampForDelayedEvent(int delayedEventTimestamp)
-{
-    int delayInBlocks = (delayedEventTimestamp) / samplesPerBlock;
-    targetBlockIndex = (currentBlockIndex + delayInBlocks) % eventsQueue.size();
-    actualTimestamp = (delayedEventTimestamp) % samplesPerBlock;
-}
-
 void MIDINoteRepeater::process(juce::MidiBuffer& midiMessages)
 {
-    int numOfReps = apvts.getRawParameterValue("numOfReps")->load();
-    if (numOfReps == 0)
-        return;
 
-    float delayInSeconds = apvts.getRawParameterValue("delayInSeconds")->load();
-    float noteLength = apvts.getRawParameterValue("noteLength")->load();
+    int divisions = apvts.getRawParameterValue("divisions")->load();
+    if (divisions == 1) return;
+
+    /*
+    TODO:
+    - make basic implementation of the editor
+    - add yaml-cpp (???)
+    */
+    NoteLengthUnit lengthInSecondsOrBeats = static_cast<NoteLengthUnit>(apvts.getRawParameterValue("lengthInSecondsOrBeats")->load());
+
+    float noteLengthInSeconds;
+    if (lengthInSecondsOrBeats == NoteLengthUnit::SECONDS) // length in seconds
+    {
+        noteLengthInSeconds = apvts.getRawParameterValue("noteLengthSeconds")->load();
+    }
+    else
+    {
+        int noteLengthChoice = apvts.getRawParameterValue("noteLengthBeats")->load();
+        double bpm = getBPM();
+        noteLengthInSeconds = NoteLengths[noteLengthChoice] * (60.0 / bpm);        
+    }
+
+    float divisionsLengthPercentage = apvts.getRawParameterValue("divisionsLengthPercentage")->load();
     int pitchShiftStep = apvts.getRawParameterValue("pitchShiftStep")->load();
-    float skewFactor = apvts.getRawParameterValue("skewFactor")->load();
 
-    int skewSign = skewFactor > 0 ? 1 : skewFactor < 0 ? -1 : 0;
-    int skewStrength = skewSign * skewFactor;
+    float skew = apvts.getRawParameterValue("skew")->load();
 
-    // spostare roba nel .cpp
-    // magari cambiare controlli e sceglierne di più comodi (note length, divisions, spacing, skew)
-    // implementare skew non lineare!
-    float skew = 0;
 
-    unsigned int noteLengthInSamples = noteLength * sampleRate;
-    unsigned int delayInSamples = delayInSeconds * sampleRate;
+    if ( (cachedDivisions != divisions) || (!juce::approximatelyEqual(skew, cachedSkew)) )
+    {
+        juce::Logger::writeToLog("updating cached notes start times");
+        cachedDivisions = divisions;
+        cachedSkew = skew;
+
+        updateCachedNotesStartTimes();
+    }
+
+    unsigned int noteLengthInSamples = noteLengthInSeconds * sampleRate;
+
+    float divisionLength = 0.0f;
+
+    juce::MidiBuffer& currentBlock = eventsQueue[currentBlockIndex];
 
     for (const juce::MidiMessageMetadata& metadata : midiMessages)
     {
@@ -59,53 +77,82 @@ void MIDINoteRepeater::process(juce::MidiBuffer& midiMessages)
         {
             int noteNumber = message.getNoteNumber();
 
-            for (float i = 0.0; i < numOfReps; i++)
+            // we re-add the original midi note to another buffer as we need to get rid of the original note off message.
+            //currentBlock.addEvent(message, metadata.samplePosition);
+
+            //queueMidiEvent(
+            //    juce::MidiMessage::noteOff(message.getChannel(), noteNumber, juce::uint8(0)),
+            //    metadata.samplePosition + cachedNoteStartTimes[1] * 
+            //);
+
+            float noteOnOffset = 0.0f;
+            float nextNoteStartTime = 0.0f;
+
+            for (int i = 0; i < cachedDivisions; i++)
             {
-                float perc = i / (numOfReps - 1.0);
-
-                if (skewSign)
-                {
-                    if (skewSign < 0)
-                        perc = 1.0 - perc;
-
-                    float res = perc;
-                    for (int j = 1; j < skewStrength; j++)
-                        res *= perc;
-
-                    perc = res;
-
-                    if (skewSign < 0)
-                        perc = 1.0 - perc;
-                }
-
-
-                noteOnTimestamp = message.getTimeStamp() + perc * delayInSamples * numOfReps;
-                //noteOnTimestamp = message.getTimeStamp() + (i + 1) * delayInSamples;
-
-                noteOffTimestamp = noteOnTimestamp + noteLengthInSamples;
-
-                getTimeStampForDelayedEvent(noteOnTimestamp);
-                eventsQueue[targetBlockIndex].addEvent(
-                    juce::MidiMessage::noteOn(message.getChannel(), noteNumber, juce::uint8(75)),
-                    actualTimestamp
-                );
-
-                getTimeStampForDelayedEvent(noteOffTimestamp);
-                eventsQueue[targetBlockIndex].addEvent(
-                    juce::MidiMessage::noteOff(message.getChannel(), noteNumber, 0.0f),
-                    actualTimestamp);
-
                 if (pitchShiftStep)
                     noteNumber = juce::jlimit(0, 127, noteNumber + pitchShiftStep);
+
+                noteOnOffset = cachedNoteStartTimes[i];
+
+                nextNoteStartTime = (i == cachedDivisions - 1) ? 1.0f : cachedNoteStartTimes[i + 1];
+                divisionLength = nextNoteStartTime - noteOnOffset;                
+
+                noteOnTimestamp = message.getTimeStamp() + static_cast<int>(noteOnOffset * noteLengthInSamples);
+                noteOffTimestamp = noteOnTimestamp + static_cast<int>(divisionLength * noteLengthInSamples * divisionsLengthPercentage) - 1;
+
+               queueMidiEvent(
+                    juce::MidiMessage::noteOn( message.getChannel(), noteNumber, message.getVelocity() ),
+                    noteOnTimestamp
+                );
+
+                queueMidiEvent(
+                    juce::MidiMessage::noteOff( message.getChannel(), noteNumber, juce::uint8(0) ),
+                    noteOffTimestamp
+                );
+
             }
         }
     }
 
-    juce::MidiBuffer& currentBlock = eventsQueue[currentBlockIndex];
-
-    if (!currentBlock.isEmpty())
-        midiMessages.addEvents(currentBlock, 0, samplesPerBlock, 0);
+    midiMessages.swapWith(currentBlock);
 
     currentBlock.clear();
     increaseCurrentBlockIndex();
+}
+
+void MIDINoteRepeater::updateCachedNotesStartTimes()
+{
+    int skewSign = cachedSkew > 0 ? 1 : cachedSkew < 0 ? -1 : 0;
+    float skewStrength = std::abs(cachedSkew);
+
+    float step = 1.0f / cachedDivisions;
+    float noteStart = 0.0f;
+
+    for (int i = 0; i < cachedDivisions; i++)
+    {
+        noteStart = i * step;
+
+        if (skewSign)
+        {
+            if (skewSign < 0)
+                noteStart = 1 - noteStart;
+
+            noteStart = juce::jmap(skewStrength, noteStart, noteStart * noteStart * (noteStart + step));
+
+            if (skewSign < 0)
+                noteStart = 1 - noteStart;
+        }
+
+        cachedNoteStartTimes[i] = noteStart;
+    }
+}
+
+void MIDINoteRepeater::queueMidiEvent(const juce::MidiMessage& message, int distanceInSamples)
+{
+    int distanceInBlocks = (distanceInSamples) / samplesPerBlock;
+    targetBlockIndex = (currentBlockIndex + distanceInBlocks) % eventsQueue.size();
+    actualTimestamp = (distanceInSamples) % samplesPerBlock;
+
+    eventsQueue[targetBlockIndex].addEvent(message, actualTimestamp);
 }
