@@ -26,7 +26,7 @@ void MIDINoteRepeater::prepareToPlay(double sampleRate, int samplesPerBlock)
 void MIDINoteRepeater::process(juce::MidiBuffer& midiMessages)
 {
 
-    int divisions = apvts.getRawParameterValue("divisions")->load();
+    int divisions = apvts.getRawParameterValue(IDs::divisions)->load();
     if (divisions == 1) return;
 
     /*
@@ -34,29 +34,28 @@ void MIDINoteRepeater::process(juce::MidiBuffer& midiMessages)
     - make basic implementation of the editor
     - add yaml-cpp (???)
     */
-    NoteLengthUnit lengthInSecondsOrBeats = static_cast<NoteLengthUnit>(apvts.getRawParameterValue("lengthInSecondsOrBeats")->load());
+    NoteLengthUnit lengthInSecondsOrBeats = static_cast<NoteLengthUnit>(apvts.getRawParameterValue(IDs::lengthInSecondsOrBeats)->load());
 
     float noteLengthInSeconds;
     if (lengthInSecondsOrBeats == NoteLengthUnit::SECONDS) // length in seconds
     {
-        noteLengthInSeconds = apvts.getRawParameterValue("noteLengthSeconds")->load();
+        noteLengthInSeconds = apvts.getRawParameterValue(IDs::noteLengthSeconds)->load();
     }
     else
     {
-        int noteLengthChoice = apvts.getRawParameterValue("noteLengthBeats")->load();
+        int noteLengthChoice = apvts.getRawParameterValue(IDs::noteLengthBeats)->load();
         double bpm = getBPM();
         noteLengthInSeconds = NoteLengths[noteLengthChoice] * (60.0 / bpm);        
     }
 
-    float divisionsLengthPercentage = apvts.getRawParameterValue("divisionsLengthPercentage")->load();
-    int pitchShiftStep = apvts.getRawParameterValue("pitchShiftStep")->load();
+    float divisionsLengthPercentage = apvts.getRawParameterValue(IDs::divisionsLengthPercentage)->load();
+    int pitchShiftStep = apvts.getRawParameterValue(IDs::pitchShiftStep)->load();
 
-    float skew = apvts.getRawParameterValue("skew")->load();
+    float skew = apvts.getRawParameterValue(IDs::skew)->load();
 
 
     if ( (cachedDivisions != divisions) || (!juce::approximatelyEqual(skew, cachedSkew)) )
     {
-        juce::Logger::writeToLog("updating cached notes start times");
         cachedDivisions = divisions;
         cachedSkew = skew;
 

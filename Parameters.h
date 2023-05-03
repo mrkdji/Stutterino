@@ -12,6 +12,19 @@
 
 #include <JuceHeader.h>
 
+const juce::StringArray noteLengthUnitChoices = juce::StringArray("Seconds", "Beats");
+
+
+namespace IDs {
+    const char* const lengthInSecondsOrBeats = "lengthInSecondsOrBeats";
+    const char* const noteLengthSeconds = "noteLengthSeconds";
+    const char* const noteLengthBeats = "noteLengthBeats";
+    const char* const divisions = "divisions";
+    const char* const divisionsLengthPercentage = "divisionsLengthPercentage";
+    const char* const pitchShiftStep = "pitchShiftStep";
+    const char* const skew = "skew";
+}
+
 enum class NoteLengthUnit {
     SECONDS,
     BEATS

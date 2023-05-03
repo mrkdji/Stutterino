@@ -218,15 +218,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout MIDINoteRepeaterAudioProcess
 
     params.add(
         std::make_unique<juce::AudioParameterChoice>(
-            "lengthInSecondsOrBeats",
+            IDs::lengthInSecondsOrBeats,
             "Length In Seconds Or Beats",
-            juce::StringArray("Seconds", "Beats"),
+            noteLengthUnitChoices,
             0
     ));
 
     params.add(
         std::make_unique<juce::AudioParameterFloat>(
-            "noteLengthSeconds",
+            IDs::noteLengthSeconds,
             "Note Length",
             juce::NormalisableRange<float>(0.001f, 2.0f, 0.001f),
             1.0f
@@ -234,7 +234,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MIDINoteRepeaterAudioProcess
 
     params.add(
         std::make_unique<juce::AudioParameterChoice>(
-            "noteLengthBeats",
+            IDs::noteLengthBeats,
             "Note Length",
             NoteLengthChoices,
             defaultNoteLengthChoice
@@ -242,7 +242,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MIDINoteRepeaterAudioProcess
 
     params.add(
         std::make_unique<juce::AudioParameterInt>(
-            "divisions",
+            IDs::divisions,
             "Divisions",
             1,
             50,
@@ -251,7 +251,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MIDINoteRepeaterAudioProcess
 
     params.add(
         std::make_unique<juce::AudioParameterFloat>(
-            "divisionsLengthPercentage",
+            IDs::divisionsLengthPercentage,
             "Divisions Length Percentage",
             juce::NormalisableRange<float>(0.001f, 1.0f, 0.001f),
             1.0f
@@ -259,7 +259,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MIDINoteRepeaterAudioProcess
 
     params.add(
         std::make_unique<juce::AudioParameterInt>(
-            "pitchShiftStep",
+            IDs::pitchShiftStep,
             "Pitch Shift Step",
             -12,
             12,
@@ -268,7 +268,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MIDINoteRepeaterAudioProcess
 
     params.add(
         std::make_unique<juce::AudioParameterFloat>(
-            "skew",
+            IDs::skew,
             "Skew",
             juce::NormalisableRange<float>(-1.0f, 1.0f, 0.01f),
             0.0f
