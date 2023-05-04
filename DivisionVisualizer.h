@@ -12,16 +12,18 @@
 
 #include <JuceHeader.h>
 
+class MIDINoteRepeater;
 //==============================================================================
 /*
 */
-using DivisionVisualizerCallback = std::function<std::vector<float>()>;
 
 class DivisionVisualizer  : public juce::Component
 {
 public:
-    DivisionVisualizer(DivisionVisualizerCallback getPoints) :
-        getPoints(getPoints) {}
+
+    DivisionVisualizer(MIDINoteRepeater* repeater) :
+        repeater(repeater)
+    {}
 
     DivisionVisualizer();
     ~DivisionVisualizer() override;
@@ -29,8 +31,9 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+
 private:
-    DivisionVisualizerCallback getPoints;
+    MIDINoteRepeater* repeater;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DivisionVisualizer)
 };

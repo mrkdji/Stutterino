@@ -60,11 +60,11 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     juce::AudioProcessorValueTreeState apvts;
+    MIDINoteRepeater repeater;
 
 private:
 
     juce::AudioProcessorValueTreeState::ParameterLayout createParametersLayout();
-    MIDINoteRepeater repeater;
     
     enum class PlayHeadState {
         PLAYING,

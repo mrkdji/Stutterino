@@ -11,6 +11,16 @@
 #include "MIDINoteRepeater.h"
 #include "Parameters.h"
 
+VisualizerData MIDINoteRepeater::getDataForVisualizer()
+{
+    return VisualizerData(
+        cachedDivisions,
+        apvts.getRawParameterValue(IDs::divisionsLengthPercentage)->load(),
+        cachedNoteStartTimes
+    );
+}
+
+
 void MIDINoteRepeater::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     juce::Logger::writeToLog("Preparing to Play");
@@ -20,7 +30,11 @@ void MIDINoteRepeater::prepareToPlay(double sampleRate, int samplesPerBlock)
 
     currentBlockIndex = 0;
     eventsQueue.clear();
+
+    float MAX_DELAY_IN_SECONDS = 5.0f;
     eventsQueue.resize(static_cast<size_t>(MAX_DELAY_IN_SECONDS * sampleRate / samplesPerBlock));
+
+    updateCachedNotesStartTimes();
 }
 
 void MIDINoteRepeater::process(juce::MidiBuffer& midiMessages)
@@ -29,11 +43,6 @@ void MIDINoteRepeater::process(juce::MidiBuffer& midiMessages)
     int divisions = apvts.getRawParameterValue(IDs::divisions)->load();
     if (divisions == 1) return;
 
-    /*
-    TODO:
-    - make basic implementation of the editor
-    - add yaml-cpp (???)
-    */
     NoteLengthUnit lengthInSecondsOrBeats = static_cast<NoteLengthUnit>(apvts.getRawParameterValue(IDs::lengthInSecondsOrBeats)->load());
 
     float noteLengthInSeconds;
@@ -122,13 +131,15 @@ void MIDINoteRepeater::process(juce::MidiBuffer& midiMessages)
 
 void MIDINoteRepeater::updateCachedNotesStartTimes()
 {
+    juce::Logger::writeToLog("Updating cached notes start times");
+
     int skewSign = cachedSkew > 0 ? 1 : cachedSkew < 0 ? -1 : 0;
     float skewStrength = std::abs(cachedSkew);
 
     float step = 1.0f / cachedDivisions;
     float noteStart = 0.0f;
 
-    for (int i = 0; i < cachedDivisions; i++)
+    for (int i = 1; i < cachedDivisions; i++)
     {
         noteStart = i * step;
 

@@ -10,50 +10,41 @@
 
 #include <JuceHeader.h>
 #include "DivisionVisualizer.h"
+#include "MIDINoteRepeater.h"
+#include "VisualizerData.h"
 
 //==============================================================================
-DivisionVisualizer::DivisionVisualizer()
-{
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-
-}
-
-DivisionVisualizer::~DivisionVisualizer()
-{
-}
+DivisionVisualizer::DivisionVisualizer(){}
+DivisionVisualizer::~DivisionVisualizer(){}
 
 void DivisionVisualizer::paint (juce::Graphics& g)
 {
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
+    g.fillAll (juce::Colours::black);
 
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
-    g.fillAll (juce::Colours::black);   // clear the background
-
-    g.setColour (juce::Colours::black);
+    g.setColour (juce::Colours::white);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
     g.setColour(juce::Colours::green);
 
-    std::vector<float> points = getPoints();
-
-    int margin = 2;
-    int spacing = 1;
-    float cornerSize = 5.0f;
-    int divisions = juce::jmax<int>(1, points.size());
-
+    constexpr int margin = 4;
+    constexpr int spacing = 1;
+    constexpr float cornerSize = 2.0f;
+    
     auto bounds = getLocalBounds().reduced(margin);
 
-    auto rect = juce::Rectangle<float>(bounds.getX(), bounds.getY(), (bounds.getWidth() / divisions) - spacing, bounds.getHeight());
-    for (int i = 0; i < divisions; i++)
+    auto rect = juce::Rectangle<float>();
+    rect.setY(bounds.getY());
+    rect.setHeight(bounds.getHeight());
+
+
+    VisualizerData data = repeater->getDataForVisualizer();
+    
+    for (int i = 0; i < data.divisions; i++)
     {
-        rect.setX(bounds.getX() + points[i] * bounds.getWidth() );
-        float w = (i == divisions - 1) ? (1.0f - points.back()) : points[i + 1] - points[i];
-        rect.setWidth(w * bounds.getWidth() - spacing);
+        rect.setX(bounds.getX() + data.noteStartTimes[i] * bounds.getWidth() );
+        float next = (i == data.divisions - 1) ? 1.0f : data.noteStartTimes[i + 1];
+        float w = bounds.getWidth() * (next - data.noteStartTimes[i]);
+        rect.setWidth(w * data.divisionsLengthPercentage - spacing);
         g.fillRoundedRectangle(rect, cornerSize);
     }
 

@@ -11,10 +11,10 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "VisualizerData.h"
 
 class juce::MidiBuffer;
 
-inline constexpr double MAX_DELAY_IN_SECONDS = 5.0;
 
 class MIDINoteRepeater {
 
@@ -43,6 +43,7 @@ public:
     void prepareToPlay(double sampleRate, int samplesPerBlock);
     void process(juce::MidiBuffer& midiMessages);
 
+    VisualizerData getDataForVisualizer();
 
 private:
     inline void increaseCurrentBlockIndex() { currentBlockIndex = (currentBlockIndex + 1) % eventsQueue.size(); }

@@ -14,9 +14,9 @@
 
 
 //==============================================================================
-MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDINoteRepeaterAudioProcessor& p, DivisionVisualizerCallback divisionVisualizerCallback)
+MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDINoteRepeaterAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
-    divisionVisualizer(divisionVisualizerCallback),
+    divisionVisualizer(&audioProcessor.repeater),
     noteLengthUnitAttachment(p.apvts, IDs::lengthInSecondsOrBeats, noteLengthUnitCombobox),
     noteLengthInSecondsAttachment(p.apvts, IDs::noteLengthSeconds, noteLengthInSecondsSlider),
     noteLengthInBeatsAttachment(p.apvts, IDs::noteLengthBeats, noteLengthInBeatsComboBox),
@@ -38,6 +38,22 @@ MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDI
     noteLengthInBeatsComboBox.addItemList(NoteLengthChoices, 1);
 
     noteLengthUnitCombobox.addListener(this);
+
+    for (auto id : { IDs::divisions, IDs::skew, IDs::divisionsLengthPercentage })
+        audioProcessor.apvts.getParameter(id)->addListener(this);
+
+}
+
+MIDINoteRepeaterAudioProcessorEditor::~MIDINoteRepeaterAudioProcessorEditor()
+{
+    for (auto id : { IDs::divisions, IDs::skew, IDs::divisionsLengthPercentage })
+        audioProcessor.apvts.getParameter(id)->removeListener(this);
+}
+
+void MIDINoteRepeaterAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
+{
+    const juce::MessageManagerLock mmLock;
+    divisionVisualizer.repaint();
 }
 
 void MIDINoteRepeaterAudioProcessorEditor::comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) 
@@ -62,9 +78,6 @@ std::vector<juce::Component*> MIDINoteRepeaterAudioProcessorEditor::getComponent
     };
 }
 
-MIDINoteRepeaterAudioProcessorEditor::~MIDINoteRepeaterAudioProcessorEditor()
-{
-}
 
 //==============================================================================
 void MIDINoteRepeaterAudioProcessorEditor::paint (juce::Graphics& g)

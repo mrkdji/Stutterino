@@ -15,17 +15,22 @@
 //==============================================================================
 /**
 */
-class MIDINoteRepeaterAudioProcessorEditor  : public juce::AudioProcessorEditor, public juce::ComboBox::Listener
+class MIDINoteRepeaterAudioProcessorEditor :
+    public juce::AudioProcessorEditor,
+    public juce::ComboBox::Listener,
+    public juce::AudioProcessorParameter::Listener
 {
 public:
-    MIDINoteRepeaterAudioProcessorEditor (MIDINoteRepeaterAudioProcessor&, DivisionVisualizerCallback);
+    MIDINoteRepeaterAudioProcessorEditor(MIDINoteRepeaterAudioProcessor&);
     ~MIDINoteRepeaterAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint (juce::Graphics&) override;
+    void paint(juce::Graphics&) override;
     void resized() override;
 
     virtual void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override;
+    virtual void parameterValueChanged(int parameterIndex, float newValue) override;
+    virtual void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override {};
 
 private:
     // This reference is provided as a quick way for your editor to

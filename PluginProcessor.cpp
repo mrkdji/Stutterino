@@ -190,8 +190,7 @@ bool MIDINoteRepeaterAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* MIDINoteRepeaterAudioProcessor::createEditor()
 {
-    return new juce::GenericAudioProcessorEditor(*this);
-    //return new MIDINoteRepeaterAudioProcessorEditor (*this);
+    return new MIDINoteRepeaterAudioProcessorEditor (*this);
 }
 
 //==============================================================================
@@ -253,7 +252,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout MIDINoteRepeaterAudioProcess
         std::make_unique<juce::AudioParameterFloat>(
             IDs::divisionsLengthPercentage,
             "Divisions Length Percentage",
-            juce::NormalisableRange<float>(0.001f, 1.0f, 0.001f),
+            juce::NormalisableRange<float>(0.01f, 1.0f, 0.01f),
             1.0f
     ));
 
