@@ -53,8 +53,9 @@ void MIDINoteRepeater::process(juce::MidiBuffer& midiMessages)
     else
     {
         int noteLengthChoice = apvts.getRawParameterValue(IDs::noteLengthBeats)->load();
-        double bpm = getBPM();
-        noteLengthInSeconds = NoteLengths[noteLengthChoice] * (60.0 / bpm);        
+        BPMAndTimeSignature info = getBPMAndTimeSignature();
+        
+        noteLengthInSeconds = NoteLengths[noteLengthChoice] * (60.0 / info.bpm) * info.timeSignature.numerator;        
     }
 
     float divisionsLengthPercentage = apvts.getRawParameterValue(IDs::divisionsLengthPercentage)->load();

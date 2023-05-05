@@ -15,14 +15,23 @@
 
 class juce::MidiBuffer;
 
+struct BPMAndTimeSignature {
+    BPMAndTimeSignature(double bpm, juce::AudioPlayHead::TimeSignature timeSignature) :
+        bpm(bpm),
+        timeSignature(timeSignature)
+    {}
+
+    double bpm;
+    juce::AudioPlayHead::TimeSignature timeSignature;
+};
 
 class MIDINoteRepeater {
 
 public:
-    MIDINoteRepeater(juce::AudioProcessorValueTreeState& apvts, std::function<double()> getBPM) : 
+    MIDINoteRepeater(juce::AudioProcessorValueTreeState& apvts, std::function<BPMAndTimeSignature()> getBPMAndTimeSignature) :
         apvts(apvts),
         cachedNoteStartTimes(50, 0.0f),
-        getBPM(getBPM)
+        getBPMAndTimeSignature(getBPMAndTimeSignature)
     {}
 
 
@@ -67,5 +76,5 @@ private:
 
     juce::AudioProcessorValueTreeState& apvts;
 
-    std::function<double()> getBPM;
+    std::function<BPMAndTimeSignature()> getBPMAndTimeSignature;
 };

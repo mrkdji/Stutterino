@@ -24,9 +24,14 @@ MIDINoteRepeaterAudioProcessor::MIDINoteRepeaterAudioProcessor()
     apvts(*this, nullptr, "PARAMETERS", createParametersLayout()),
     repeater(
         apvts,
-        [this]() -> double {
-            auto bpm = getPlayHead()->getPosition()->getBpm();
-            return bpm ? *bpm : 1.0;
+        [this]() -> BPMAndTimeSignature {
+            auto bpmOpt = getPlayHead()->getPosition()->getBpm();
+            double bpm = bpmOpt ? *bpmOpt : 1.0;
+
+            auto signatureOpt = getPlayHead()->getPosition()->getTimeSignature();
+            juce::AudioPlayHead::TimeSignature signature = signatureOpt ? *signatureOpt : juce::AudioPlayHead::TimeSignature();
+
+            return BPMAndTimeSignature(bpm, signature);
     })
 #endif
 {
