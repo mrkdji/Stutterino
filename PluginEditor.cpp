@@ -29,6 +29,9 @@ MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDI
     setResizeLimits(400, 300, 1200, 900);
     setSize (400, 300);
 
+    pluginName.setText("Stutterino", juce::NotificationType::dontSendNotification);
+    pluginName.setJustificationType(juce::Justification::centred);
+
     for (auto c : getComponents())
     {
         addAndMakeVisible(c);
@@ -59,6 +62,7 @@ void MIDINoteRepeaterAudioProcessorEditor::comboBoxChanged(juce::ComboBox* combo
 std::vector<juce::Component*> MIDINoteRepeaterAudioProcessorEditor::getComponents()
 {
     return {
+    &pluginName,
     &noteLengthUnitCombobox,
     &noteLengthInSecondsSlider,
     &noteLengthInBeatsComboBox,
@@ -80,16 +84,19 @@ void MIDINoteRepeaterAudioProcessorEditor::paint (juce::Graphics& g)
 
 void MIDINoteRepeaterAudioProcessorEditor::resized()
 {
+    const int pluginNameHeight = 30;
     const int noteLengthSectionHeight = 30;
-    const int divisionVisualizerHeight = 50;
+    const int divisionVisualizerHeight = 60;
     const int margin = 2;
 
     juce::Rectangle bounds = getLocalBounds();
+    juce::Rectangle pluginNameSection = bounds.removeFromTop(pluginNameHeight);
     juce::Rectangle noteLengthSection = bounds.removeFromTop(noteLengthSectionHeight).reduced(margin);
     juce::Rectangle divisionVisualizerSection = bounds.removeFromTop(divisionVisualizerHeight).reduced(margin);
     juce::Rectangle divisionSection = bounds.removeFromTop(bounds.getHeight() * 0.5f).reduced(margin);
     juce::Rectangle fxSection = bounds.reduced(margin);
 
+    pluginName.setBounds(pluginNameSection);
 
     noteLengthUnitCombobox.setBounds(noteLengthSection.removeFromLeft(getWidth() * 0.4f).reduced(margin));
     noteLengthInSecondsSlider.setBounds(noteLengthSection.reduced(margin));
