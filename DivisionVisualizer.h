@@ -3,7 +3,7 @@
 
     DivisionVisualizer.h
     Created: 3 May 2023 12:03:47pm
-    Author:  lirija
+    Author:  mrkdji
 
   ==============================================================================
 */
@@ -17,16 +17,24 @@ class MIDINoteRepeater;
 /*
 */
 
-class DivisionVisualizer  : public juce::Component
+class DivisionVisualizer  : 
+    public juce::Component, 
+    public juce::Timer
 {
 public:
 
     DivisionVisualizer(MIDINoteRepeater* repeater) :
         repeater(repeater)
-    {}
+    {
+        startTimer(50);
+    }
 
-    DivisionVisualizer();
-    ~DivisionVisualizer() override;
+    ~DivisionVisualizer() 
+    {
+        stopTimer();
+    }
+
+    virtual void timerCallback() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;

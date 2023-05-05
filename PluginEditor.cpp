@@ -17,14 +17,14 @@
 MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDINoteRepeaterAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
     divisionVisualizer(&audioProcessor.repeater),
-    noteLengthUnitAttachment(p.apvts, IDs::lengthInSecondsOrBeats, noteLengthUnitCombobox),
     noteLengthInSecondsAttachment(p.apvts, IDs::noteLengthSeconds, noteLengthInSecondsSlider),
-    noteLengthInBeatsAttachment(p.apvts, IDs::noteLengthBeats, noteLengthInBeatsComboBox),
     divisionsAttachment(p.apvts, IDs::divisions, divisionsSlider),
     divisionLengthPercentageAttachment(p.apvts, IDs::divisionsLengthPercentage, divisionLengthPercentageSlider),
     pitchShiftStepAttachment(p.apvts, IDs::pitchShiftStep, pitchShiftStepSlider),
     skewAttachment(p.apvts, IDs::skew, skewSlider)
 {
+    // attach labels and tooltips to components;
+
     setResizable(true, true);
     setResizeLimits(400, 300, 1200, 900);
     setSize (400, 300);
@@ -36,24 +36,16 @@ MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDI
 
     noteLengthUnitCombobox.addItemList(noteLengthUnitChoices, 1);
     noteLengthInBeatsComboBox.addItemList(NoteLengthChoices, 1);
-
+    noteLengthUnitAttachment = std::make_unique<ComboBoxAttachment>(p.apvts, IDs::lengthInSecondsOrBeats, noteLengthUnitCombobox);
+    noteLengthInBeatsAttachment = std::make_unique<ComboBoxAttachment>(p.apvts, IDs::noteLengthBeats, noteLengthInBeatsComboBox);
     noteLengthUnitCombobox.addListener(this);
 
-    for (auto id : { IDs::divisions, IDs::skew, IDs::divisionsLengthPercentage })
-        audioProcessor.apvts.getParameter(id)->addListener(this);
-
+    comboBoxChanged(&noteLengthUnitCombobox);
 }
 
 MIDINoteRepeaterAudioProcessorEditor::~MIDINoteRepeaterAudioProcessorEditor()
 {
-    for (auto id : { IDs::divisions, IDs::skew, IDs::divisionsLengthPercentage })
-        audioProcessor.apvts.getParameter(id)->removeListener(this);
-}
-
-void MIDINoteRepeaterAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
-{
-    const juce::MessageManagerLock mmLock;
-    divisionVisualizer.repaint();
+    noteLengthUnitCombobox.removeListener(this);
 }
 
 void MIDINoteRepeaterAudioProcessorEditor::comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) 
@@ -84,10 +76,6 @@ void MIDINoteRepeaterAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
 }
 
 void MIDINoteRepeaterAudioProcessorEditor::resized()

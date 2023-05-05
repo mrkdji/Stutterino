@@ -3,7 +3,7 @@
 
     DivisionVisualizer.cpp
     Created: 3 May 2023 12:03:47pm
-    Author:  lirija
+    Author:  mrkdji
 
   ==============================================================================
 */
@@ -14,8 +14,11 @@
 #include "VisualizerData.h"
 
 //==============================================================================
-DivisionVisualizer::DivisionVisualizer(){}
-DivisionVisualizer::~DivisionVisualizer(){}
+
+void DivisionVisualizer::timerCallback()
+{
+    repaint();
+}
 
 void DivisionVisualizer::paint (juce::Graphics& g)
 {
@@ -36,9 +39,8 @@ void DivisionVisualizer::paint (juce::Graphics& g)
     rect.setY(bounds.getY());
     rect.setHeight(bounds.getHeight());
 
-
     VisualizerData data = repeater->getDataForVisualizer();
-    
+
     for (int i = 0; i < data.divisions; i++)
     {
         rect.setX(bounds.getX() + data.noteStartTimes[i] * bounds.getWidth() );

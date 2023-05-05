@@ -14,7 +14,7 @@
 VisualizerData MIDINoteRepeater::getDataForVisualizer()
 {
     return VisualizerData(
-        cachedDivisions,
+        apvts.getRawParameterValue(IDs::divisions)->load(),
         apvts.getRawParameterValue(IDs::divisionsLengthPercentage)->load(),
         cachedNoteStartTimes
     );

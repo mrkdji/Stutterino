@@ -17,8 +17,7 @@
 */
 class MIDINoteRepeaterAudioProcessorEditor :
     public juce::AudioProcessorEditor,
-    public juce::ComboBox::Listener,
-    public juce::AudioProcessorParameter::Listener
+    public juce::ComboBox::Listener
 {
 public:
     MIDINoteRepeaterAudioProcessorEditor(MIDINoteRepeaterAudioProcessor&);
@@ -29,10 +28,9 @@ public:
     void resized() override;
 
     virtual void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override;
-    virtual void parameterValueChanged(int parameterIndex, float newValue) override;
-    virtual void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override {};
 
 private:
+
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     MIDINoteRepeaterAudioProcessor& audioProcessor;
@@ -52,9 +50,9 @@ private:
 
     DivisionVisualizer divisionVisualizer;
 
-    ComboBoxAttachment noteLengthUnitAttachment;
+    std::unique_ptr<ComboBoxAttachment> noteLengthUnitAttachment;
+    std::unique_ptr<ComboBoxAttachment> noteLengthInBeatsAttachment;
     SliderAttachment noteLengthInSecondsAttachment;
-    ComboBoxAttachment noteLengthInBeatsAttachment;
     SliderAttachment divisionsAttachment;
     SliderAttachment divisionLengthPercentageAttachment;
     SliderAttachment pitchShiftStepAttachment;
