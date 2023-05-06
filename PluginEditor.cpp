@@ -23,11 +23,13 @@ MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDI
     pitchShiftStepAttachment(p.apvts, IDs::pitchShiftStep, pitchShiftStepSlider),
     skewAttachment(p.apvts, IDs::skew, skewSlider)
 {
-    // attach labels and tooltips to components;
 
     setResizable(true, true);
     setResizeLimits(400, 300, 1200, 900);
     setSize (400, 300);
+
+    noteDurationLabel.setText("Select Note Duration: ", juce::NotificationType::dontSendNotification);
+    noteDurationLabel.setTooltip("Length can be optionally measured in seconds or measures");
 
     pluginName.setText("Stutterino", juce::NotificationType::dontSendNotification);
     pluginName.setJustificationType(juce::Justification::centred);
@@ -62,6 +64,7 @@ void MIDINoteRepeaterAudioProcessorEditor::comboBoxChanged(juce::ComboBox* combo
 std::vector<juce::Component*> MIDINoteRepeaterAudioProcessorEditor::getComponents()
 {
     return {
+    &noteDurationLabel,
     &pluginName,
     &noteLengthUnitCombobox,
     &noteLengthInSecondsSlider,
@@ -85,7 +88,7 @@ void MIDINoteRepeaterAudioProcessorEditor::paint (juce::Graphics& g)
 void MIDINoteRepeaterAudioProcessorEditor::resized()
 {
     const int pluginNameHeight = 30;
-    const int noteLengthSectionHeight = 30;
+    const int noteLengthSectionHeight = 60;
     const int divisionVisualizerHeight = 60;
     const int margin = 2;
 
@@ -98,6 +101,7 @@ void MIDINoteRepeaterAudioProcessorEditor::resized()
 
     pluginName.setBounds(pluginNameSection);
 
+    noteDurationLabel.setBounds(noteLengthSection.removeFromTop( 2 * margin + noteDurationLabel.getFont().getHeight()) );
     noteLengthUnitCombobox.setBounds(noteLengthSection.removeFromLeft(getWidth() * 0.4f).reduced(margin));
     noteLengthInSecondsSlider.setBounds(noteLengthSection.reduced(margin));
     noteLengthInBeatsComboBox.setBounds(noteLengthSection.reduced(margin));

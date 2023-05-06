@@ -83,6 +83,8 @@ private:
     std::unique_ptr<ComboBoxAttachment> noteLengthUnitAttachment;
     std::unique_ptr<ComboBoxAttachment> noteLengthInBeatsAttachment;
 
+
+    juce::Label noteDurationLabel;
     juce::Slider noteLengthInSecondsSlider;
     JuceSliderAttachment noteLengthInSecondsAttachment;
 
@@ -95,6 +97,8 @@ private:
     SliderAttachment divisionLengthPercentageAttachment;
     SliderAttachment pitchShiftStepAttachment;
     SliderAttachment skewAttachment;
+
+    juce::TooltipWindow tooltipWindow;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MIDINoteRepeaterAudioProcessorEditor)
 };
