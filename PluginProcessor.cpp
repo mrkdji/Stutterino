@@ -11,16 +11,17 @@
 #include "Parameters.h"
 
 //==============================================================================
+
+juce::AudioProcessor::BusesProperties MIDINoteRepeaterAudioProcessor::getBusesProperties()
+{
+    return juce::PluginHostType().isAbletonLive() ?
+        juce::AudioProcessor::BusesProperties().withInput("Input", juce::AudioChannelSet::stereo(), true).withOutput("Output", juce::AudioChannelSet::stereo(), true) :
+        juce::AudioProcessor::BusesProperties();
+}
+
 MIDINoteRepeaterAudioProcessor::MIDINoteRepeaterAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-    : AudioProcessor(BusesProperties()
-#if ! JucePlugin_IsMidiEffect
-#if ! JucePlugin_IsSynth
-        .withInput("Input", juce::AudioChannelSet::stereo(), true)
-#endif
-        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-#endif
-    ),
+    : AudioProcessor( MIDINoteRepeaterAudioProcessor::getBusesProperties() ),
     apvts(*this, nullptr, "PARAMETERS", createParametersLayout()),
     repeater(
         apvts,

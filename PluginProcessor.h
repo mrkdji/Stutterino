@@ -20,6 +20,8 @@ class MIDINoteRepeaterAudioProcessor  : public juce::AudioProcessor, public juce
                             #endif
 {
 public:
+    static BusesProperties MIDINoteRepeaterAudioProcessor::getBusesProperties();
+
     //==============================================================================
     MIDINoteRepeaterAudioProcessor();
     ~MIDINoteRepeaterAudioProcessor() override;
