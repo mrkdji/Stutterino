@@ -22,12 +22,12 @@ void DivisionVisualizer::timerCallback()
 
 void DivisionVisualizer::paint (juce::Graphics& g)
 {
-    g.fillAll (juce::Colours::black);
+    g.fillAll ( getLookAndFeel().findColour(DivisionVisualizer::backgroundColourId) );
 
     g.setColour (juce::Colours::white);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
-    g.setColour(juce::Colours::green);
+    g.setColour( getLookAndFeel().findColour(DivisionVisualizer::divisionsColourId) );
 
     constexpr int margin = 4;
     constexpr int spacing = 1;

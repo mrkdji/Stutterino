@@ -23,6 +23,9 @@ class DivisionVisualizer  :
 {
 public:
 
+    static const int backgroundColourId = 1;
+    static const int divisionsColourId = 2;
+
     DivisionVisualizer(MIDINoteRepeater* repeater) :
         repeater(repeater)
     {

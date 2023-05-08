@@ -15,9 +15,91 @@
 //==============================================================================
 /**
 */
+
+
+class Styles : public juce::LookAndFeel_V4 
+{
+public:
+    enum Colors {
+        LIGHTEST,
+        LIGHT,
+        DARK,
+        DARKEST
+    };
+
+
+    Styles();
+
+    //virtual void drawPopupMenuItem(juce::Graphics& g,
+    //    const juce::Rectangle< int >& area,
+    //    bool 	isSeparator,
+    //    bool 	isActive,
+    //    bool 	isHighlighted,
+    //    bool 	isTicked,
+    //    bool 	hasSubMenu,
+    //    const juce::String& text,
+    //    const juce::String& shortcutKeyText,
+    //    const juce::Drawable* icon,
+    //    const juce::Colour* textColour
+    //)
+    //{
+    //    static juce::DrawablePath customIcon;
+    //    static juce::Path path;
+    //    const float radius = 4.0f;
+    //    g.setColour(colors[Colors::LIGHTEST]);
+    //    path.addEllipse(-radius * 0.5, -radius * 0.5, radius, radius);
+    //    customIcon.setPath(path);
+
+    //    LookAndFeel_V4::drawPopupMenuItem(g, area, isSeparator, isActive, isHighlighted, isTicked, hasSubMenu, text, shortcutKeyText, &customIcon, textColour);
+    //}
+
+    juce::Path getTickShape(float height) override
+    {
+        juce::Path path;
+
+        float radius = height * 0.5f;        
+        path.addEllipse(-radius, -radius, height, height);
+
+        juce::PathStrokeType pst( 0.1f );
+        pst.createStrokedPath(path, path);
+
+        return path;
+    }
+
+    
+
+    //virtual void drawLabel(juce::Graphics& g, juce::Label& label) override
+    //{
+    //    juce::Font font(getLabelFont(label));
+    //    font.setHeight( 30 );
+    //    label.setFont(font);
+    //    juce::LookAndFeel_V4::drawLabel(g, label);
+    //}
+    
+    virtual juce::Font getComboBoxFont(juce::ComboBox& box) override 
+    { return defaultFont; }
+
+    virtual juce::Font getSliderPopupFont(juce::Slider& s) override
+    { return defaultFont; }
+
+    const int defaultFontHeight = 20;
+    const int titleFontHeight = 40;
+    const juce::Font defaultFont = juce::Font(defaultFontHeight);
+    const juce::Font titleFont = juce::Font(titleFontHeight);
+    const int outerRectMargin = 5;
+    const int outerRectLineThickness = 4;
+
+    std::vector<juce::Colour> colors;
+};
+
+
+inline Styles* getStyles(juce::Component* c) {
+    return static_cast<Styles*>( &c->getLookAndFeel() );
+}
+
+
 class MIDINoteRepeaterAudioProcessorEditor :
-    public juce::AudioProcessorEditor,
-    public juce::ComboBox::Listener
+    public juce::AudioProcessorEditor
 {
 public:
     MIDINoteRepeaterAudioProcessorEditor(MIDINoteRepeaterAudioProcessor&);
@@ -27,9 +109,8 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
 
-    virtual void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override;
-
 private:
+    Styles styles;
 
     using JuceSliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
     using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
@@ -38,8 +119,12 @@ private:
     public:
         Slider() {
             description.setJustificationType(juce::Justification::centred);
+            description.setFont( getStyles(this)->defaultFont );
             addAndMakeVisible(slider);
             addAndMakeVisible(description);
+
+            slider.setTextBoxIsEditable(false);
+            slider.hideTextBox(false);
         }
         
         void resized() override
@@ -47,7 +132,7 @@ private:
             constexpr int margin = 2;
 
             auto bounds = getLocalBounds();
-            description.setBounds(bounds.removeFromTop(description.getFont().getHeight() + margin));
+            description.setBounds(bounds.removeFromTop( getStyles(this)->defaultFontHeight + margin ));
             slider.setBounds(bounds);
         }
 
@@ -99,6 +184,7 @@ private:
     SliderAttachment skewAttachment;
 
     juce::TooltipWindow tooltipWindow;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MIDINoteRepeaterAudioProcessorEditor)
 };
