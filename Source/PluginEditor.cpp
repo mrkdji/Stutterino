@@ -63,7 +63,6 @@ Styles::Styles()
     setDefaultLookAndFeel(this);
 }
 
-//eventually change sliders into rotary, add a rounded rect as the plugin bounds.
 
 //==============================================================================
 MIDINoteRepeaterAudioProcessorEditor::MIDINoteRepeaterAudioProcessorEditor (MIDINoteRepeaterAudioProcessor& p)
@@ -142,7 +141,6 @@ std::vector<juce::Component*> MIDINoteRepeaterAudioProcessorEditor::getComponent
 void MIDINoteRepeaterAudioProcessorEditor::paint (juce::Graphics& g)
 {
 
-//    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
     g.fillAll(styles.colors[Styles::Colors::DARKEST]);
     g.setColour(styles.colors[Styles::Colors::DARK]);
     g.fillRoundedRectangle(getX(), getY(), getWidth(), getHeight(), 5.0f);

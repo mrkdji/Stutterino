@@ -141,12 +141,6 @@ bool MIDINoteRepeaterAudioProcessor::isBusesLayoutSupported (const BusesLayout& 
 }
 #endif
 
-
-void MIDINoteRepeaterAudioProcessor::buttonClicked(juce::Button* btn)
-{
-
-}
-
 void MIDINoteRepeaterAudioProcessor::panic(juce::MidiBuffer& midiMessages)
 {
     midiMessages.clear();

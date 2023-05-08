@@ -30,29 +30,6 @@ public:
 
     Styles();
 
-    //virtual void drawPopupMenuItem(juce::Graphics& g,
-    //    const juce::Rectangle< int >& area,
-    //    bool 	isSeparator,
-    //    bool 	isActive,
-    //    bool 	isHighlighted,
-    //    bool 	isTicked,
-    //    bool 	hasSubMenu,
-    //    const juce::String& text,
-    //    const juce::String& shortcutKeyText,
-    //    const juce::Drawable* icon,
-    //    const juce::Colour* textColour
-    //)
-    //{
-    //    static juce::DrawablePath customIcon;
-    //    static juce::Path path;
-    //    const float radius = 4.0f;
-    //    g.setColour(colors[Colors::LIGHTEST]);
-    //    path.addEllipse(-radius * 0.5, -radius * 0.5, radius, radius);
-    //    customIcon.setPath(path);
-
-    //    LookAndFeel_V4::drawPopupMenuItem(g, area, isSeparator, isActive, isHighlighted, isTicked, hasSubMenu, text, shortcutKeyText, &customIcon, textColour);
-    //}
-
     juce::Path getTickShape(float height) override
     {
         juce::Path path;
@@ -66,15 +43,6 @@ public:
         return path;
     }
 
-    
-
-    //virtual void drawLabel(juce::Graphics& g, juce::Label& label) override
-    //{
-    //    juce::Font font(getLabelFont(label));
-    //    font.setHeight( 30 );
-    //    label.setFont(font);
-    //    juce::LookAndFeel_V4::drawLabel(g, label);
-    //}
     
     virtual juce::Font getComboBoxFont(juce::ComboBox& box) override 
     { return defaultFont; }

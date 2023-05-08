@@ -86,14 +86,6 @@ void MIDINoteRepeater::process(juce::MidiBuffer& midiMessages)
         {
             int noteNumber = message.getNoteNumber();
 
-            // we re-add the original midi note to another buffer as we need to get rid of the original note off message.
-            //currentBlock.addEvent(message, metadata.samplePosition);
-
-            //queueMidiEvent(
-            //    juce::MidiMessage::noteOff(message.getChannel(), noteNumber, juce::uint8(0)),
-            //    metadata.samplePosition + cachedNoteStartTimes[1] * 
-            //);
-
             float noteOnOffset = 0.0f;
             float nextNoteStartTime = 0.0f;
 
