@@ -1,9 +1,29 @@
+<style>
+img {
+    display: block;
+    width: 60%;
+    margin: 0 auto;
+}
+strong {
+    color: red;
+    font-size: larger;
+}
+</style>
 # STUTTERINO: MIDI NOTE REPEATER
 
-Stutterino is a plugin meant as an aid when composing glitchy music.
+Stutterino is a MIDI plugin meant as an aid for composing glitchy music.
 
 ## INTENDED USAGE
-Add gifs here.
+Stutterino facilitates the creation of [snare rushes](https://en.wikipedia.org/wiki/Snare_rush): 
+
+Add a single note in the MIDI editor and an instance of Stutterino before your instrument plugin of choice, then tweak the number, length and skew of repetitions through the plugin parameters.
+
+
+<strong>BEWARE!</strong> The MIDI note off message is overriden by the plugin instance, so the note length won't be the same as the one painted in the MIDI editor.
+
+Stutterino can also modify the midi pitches of subsequent repetitions.
+
+<img src= "images/intended_usage.gif">
 
 ## ROADMAP
 - Add some kind of optional parameters randomization;
